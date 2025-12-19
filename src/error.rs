@@ -2,6 +2,7 @@ use thiserror::Error;
 
 /// Main error type for the `OpenTimestamps` client
 #[derive(Error, Debug)]
+#[allow(dead_code)]
 pub enum Error {
     /// IO error occurred
     #[error("IO error: {0}")]
