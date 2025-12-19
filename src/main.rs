@@ -2,6 +2,7 @@
 
 use clap::Parser;
 
+mod calendar;
 mod cli;
 mod commands;
 mod error;
@@ -19,8 +20,12 @@ async fn main() -> error::Result<()> {
     }
 
     match cli.command {
-        Command::Stamp { files, .. } => {
-            println!("TODO: stamp {files:?}");
+        Command::Stamp {
+            files,
+            calendar,
+            timeout,
+        } => {
+            commands::stamp::execute(&files, calendar, timeout).await?;
         }
         Command::Verify { file, .. } => {
             println!("TODO: verify {}", file.display());
