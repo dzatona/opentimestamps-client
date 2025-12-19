@@ -986,6 +986,7 @@ dependencies = [
  "hex",
  "log",
  "opentimestamps",
+ "rand 0.8.5",
  "reqwest",
  "sha2",
  "thiserror",
