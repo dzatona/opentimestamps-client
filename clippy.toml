@@ -1,0 +1,2 @@
+# Allow multiple versions of crates (transitive dependencies from external crates)
+# This is common in Rust ecosystem and not under our control
