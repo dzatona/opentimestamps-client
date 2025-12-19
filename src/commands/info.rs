@@ -30,6 +30,9 @@ fn collect_attestations(step: &Step, attestations: &mut Vec<Attestation>) {
 /// Reads an OTS file and displays its timestamp information.
 /// In normal mode, shows a summary (digest, attestations).
 /// In detailed mode, prints the full structure using the Display trait.
+///
+/// # Errors
+/// Returns error if file cannot be read or parsed
 pub fn execute(file: &Path, detailed: bool) -> Result<()> {
     let f = File::open(file)?;
     let reader = BufReader::new(f);

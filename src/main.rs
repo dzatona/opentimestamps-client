@@ -6,6 +6,7 @@ mod calendar;
 mod cli;
 mod commands;
 mod error;
+mod verifier;
 
 use cli::{Cli, Command};
 
@@ -27,8 +28,8 @@ async fn main() -> error::Result<()> {
         } => {
             commands::stamp::execute(&files, calendar, timeout).await?;
         }
-        Command::Verify { file, .. } => {
-            println!("TODO: verify {}", file.display());
+        Command::Verify { file, target } => {
+            commands::verify::execute(&file, target.as_deref()).await?;
         }
         Command::Upgrade { file, dry_run } => {
             commands::upgrade::execute(&file, dry_run).await?;
