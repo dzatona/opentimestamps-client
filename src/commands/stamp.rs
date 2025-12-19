@@ -34,6 +34,7 @@ use std::time::Duration;
 /// - File cannot be read
 /// - Calendar submission fails
 /// - .ots file cannot be written
+#[allow(clippy::future_not_send)]
 pub async fn execute(
     files: &[impl AsRef<Path>],
     calendar_urls: Option<Vec<String>>,
@@ -152,7 +153,7 @@ fn build_timestamp(
         next: vec![Step {
             // Step 2: SHA256 hash
             data: StepData::Op(Op::Sha256),
-            output: commitment.clone(),
+            output: commitment,
             // Step 3: Calendar timestamp (contains the actual attestations)
             next: vec![calendar_timestamp.first_step],
         }],
@@ -213,7 +214,7 @@ mod tests {
             },
         };
 
-        let timestamp = build_timestamp(file_digest.clone(), nonce.clone(), calendar_timestamp);
+        let timestamp = build_timestamp(file_digest.clone(), nonce, calendar_timestamp);
 
         // Verify structure
         assert_eq!(timestamp.start_digest, file_digest);
