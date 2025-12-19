@@ -3,6 +3,7 @@
 use clap::Parser;
 
 mod cli;
+mod commands;
 mod error;
 
 use cli::{Cli, Command};
@@ -27,8 +28,8 @@ async fn main() -> error::Result<()> {
         Command::Upgrade { file, .. } => {
             println!("TODO: upgrade {}", file.display());
         }
-        Command::Info { file, .. } => {
-            println!("TODO: info {}", file.display());
+        Command::Info { file, detailed } => {
+            commands::info::execute(&file, detailed)?;
         }
     }
 
