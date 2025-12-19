@@ -1,6 +1,7 @@
-// Module declarations (commented out until implementation)
-// pub mod cli;
+pub mod error;
+// Future modules (commented for now):
 // pub mod calendar;
 // pub mod verifier;
-// pub mod error;
 // pub mod commands;
+
+pub use error::{Error, Result};
