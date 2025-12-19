@@ -1,0 +1,39 @@
+[package]
+name = "ots"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.70"
+description = "OpenTimestamps client"
+license = "MIT"
+repository = "https://github.com/dzatona/rust-opentimestamps-client"
+
+[dependencies]
+opentimestamps = "0.2"
+clap = { version = "4", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.12", features = ["rustls-tls"], default-features = false }
+thiserror = "2"
+sha2 = "0.10"
+hex = "0.4"
+env_logger = "0.11"
+log = "0.4"
+
+# Bitcoin verification backends
+electrum-client = { version = "0.24", optional = true }
+esplora-client = { version = "0.12", optional = true, default-features = false, features = ["async-https-rustls"] }
+bitcoincore-rpc = { version = "0.19", optional = true }
+
+[features]
+default = ["electrum"]
+electrum = ["dep:electrum-client"]
+esplora = ["dep:esplora-client"]
+rpc = ["dep:bitcoincore-rpc"]
+
+[dev-dependencies]
+tokio-test = "0.4"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "abort"
