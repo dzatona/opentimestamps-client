@@ -30,8 +30,8 @@ async fn main() -> error::Result<()> {
         Command::Verify { file, .. } => {
             println!("TODO: verify {}", file.display());
         }
-        Command::Upgrade { file, .. } => {
-            println!("TODO: upgrade {}", file.display());
+        Command::Upgrade { file, dry_run } => {
+            commands::upgrade::execute(&file, dry_run).await?;
         }
         Command::Info { file, detailed } => {
             commands::info::execute(&file, detailed)?;
