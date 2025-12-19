@@ -6,6 +6,8 @@ rust-version = "1.70"
 description = "OpenTimestamps client"
 license = "MIT"
 repository = "https://github.com/dzatona/rust-opentimestamps-client"
+keywords = ["opentimestamps", "timestamp", "bitcoin", "blockchain"]
+categories = ["cryptography", "command-line-utilities"]
 
 [dependencies]
 opentimestamps = "0.2"
