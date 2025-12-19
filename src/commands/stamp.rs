@@ -16,7 +16,7 @@ use std::time::Duration;
 /// Creates timestamps for one or more files by:
 /// 1. Computing SHA256 hash of each file
 /// 2. Adding a random 16-byte nonce for privacy
-/// 3. Computing SHA256 of (file_hash + nonce)
+/// 3. Computing SHA256 of (`file_hash` + nonce)
 /// 4. Submitting the commitment to calendar servers
 /// 5. Parsing the calendar response into a Timestamp
 /// 6. Building the complete timestamp chain
@@ -85,7 +85,7 @@ pub async fn execute(
         let ots_path = format!("{}.ots", path.display());
         save_ots(&ots, &ots_path)?;
 
-        info!("Created timestamp: {}", ots_path);
+        info!("Created timestamp: {ots_path}");
     }
 
     Ok(())
@@ -125,7 +125,7 @@ fn parse_calendar_response(commitment: &[u8], response: &[u8]) -> Result<Timesta
 
 /// Build the complete timestamp structure
 ///
-/// Creates the chain: file_digest -> append(nonce) -> sha256 -> calendar_timestamp
+/// Creates the chain: `file_digest` -> append(nonce) -> sha256 -> `calendar_timestamp`
 ///
 /// The structure represents:
 /// 1. Start with file digest
@@ -164,7 +164,7 @@ fn build_timestamp(
     }
 }
 
-/// Save a DetachedTimestampFile to disk
+/// Save a `DetachedTimestampFile` to disk
 ///
 /// Uses the opentimestamps library's serialization to write the .ots file.
 fn save_ots(ots: &DetachedTimestampFile, path: &str) -> Result<()> {
