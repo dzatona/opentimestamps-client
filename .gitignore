@@ -1,2 +1,8 @@
 _reference/
 /logs
+_dev/
+
+
+# Added by cargo
+
+/target
