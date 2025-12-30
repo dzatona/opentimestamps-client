@@ -6,3 +6,4 @@ _dev/
 # Added by cargo
 
 /target
+/docs-md
