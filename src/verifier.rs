@@ -48,8 +48,7 @@ impl ElectrumVerifier {
     #[must_use]
     pub fn new(server: Option<String>) -> Self {
         Self {
-            server: server
-                .unwrap_or_else(|| "tcp://electrum.blockstream.info:50001".to_string()),
+            server: server.unwrap_or_else(|| "tcp://electrum.blockstream.info:50001".to_string()),
         }
     }
 }
@@ -85,9 +84,6 @@ impl BlockVerifier for ElectrumVerifier {
         // Reverse bytes for internal representation (Bitcoin internal byte order)
         merkle_root.reverse();
 
-        Ok(BlockHeader {
-            merkle_root,
-            time: header.time,
-        })
+        Ok(BlockHeader { merkle_root, time: header.time })
     }
 }

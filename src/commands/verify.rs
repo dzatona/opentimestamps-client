@@ -1,9 +1,7 @@
 use crate::error::{Error, Result};
+use crate::ots::{Attestation, DetachedTimestampFile, Step, StepData};
 use crate::verifier::{BlockVerifier, ElectrumVerifier};
 use log::{debug, info};
-use opentimestamps::attestation::Attestation;
-use opentimestamps::timestamp::{Step, StepData};
-use opentimestamps::DetachedTimestampFile;
 use sha2::{Digest, Sha256};
 use std::fs::File;
 use std::io::{BufReader, Read};
@@ -60,10 +58,7 @@ pub async fn execute(file: &Path, target: Option<&Path>) -> Result<()> {
             hex::encode(&file_hash)
         )));
     }
-    debug!(
-        "File hash matches: {}",
-        hex::encode(&ots.timestamp.start_digest)
-    );
+    debug!("File hash matches: {}", hex::encode(&ots.timestamp.start_digest));
 
     // 4. Find Bitcoin attestation and verify against blockchain
     let verifier = ElectrumVerifier::new(None);
@@ -84,16 +79,13 @@ pub async fn execute(file: &Path, target: Option<&Path>) -> Result<()> {
         }
 
         // Convert Unix timestamp to human-readable date
-        let datetime = chrono::DateTime::from_timestamp(i64::from(header.time), 0)
-            .map_or_else(|| "unknown".to_string(), |dt| dt.format("%Y-%m-%d %H:%M:%S UTC").to_string());
+        let datetime = chrono::DateTime::from_timestamp(i64::from(header.time), 0).map_or_else(
+            || "unknown".to_string(),
+            |dt| dt.format("%Y-%m-%d %H:%M:%S UTC").to_string(),
+        );
 
-        println!(
-            "Success! Bitcoin block {height} attests existence as of {datetime}"
-        );
-        println!(
-            "Merkle root: {}",
-            hex::encode(header.merkle_root)
-        );
+        println!("Success! Bitcoin block {height} attests existence as of {datetime}");
+        println!("Merkle root: {}", hex::encode(header.merkle_root));
         return Ok(());
     }
 

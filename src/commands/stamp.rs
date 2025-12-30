@@ -1,10 +1,7 @@
 use crate::calendar::CalendarClient;
 use crate::error::Result;
+use crate::ots::{Deserializer, DetachedTimestampFile, DigestType, Op, Step, StepData, Timestamp};
 use log::{debug, info};
-use opentimestamps::op::Op;
-use opentimestamps::ser::{Deserializer, DigestType};
-use opentimestamps::timestamp::{Step, StepData, Timestamp};
-use opentimestamps::DetachedTimestampFile;
 use sha2::{Digest, Sha256};
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Cursor, Read, Write};
@@ -65,9 +62,7 @@ pub async fn execute(
         debug!("Commitment: {}", hex::encode(commitment));
 
         // 4. Submit to calendars
-        let response = client
-            .submit_to_calendars(&calendar_urls_ref, &commitment)
-            .await?;
+        let response = client.submit_to_calendars(&calendar_urls_ref, &commitment).await?;
 
         // 5. Parse calendar response into Timestamp
         let calendar_timestamp = parse_calendar_response(&commitment, &response)?;
@@ -77,10 +72,7 @@ pub async fn execute(
         let timestamp = build_timestamp(file_digest.to_vec(), nonce.to_vec(), calendar_timestamp);
 
         // 7. Create DetachedTimestampFile
-        let ots = DetachedTimestampFile {
-            digest_type: DigestType::Sha256,
-            timestamp,
-        };
+        let ots = DetachedTimestampFile { digest_type: DigestType::Sha256, timestamp };
 
         // 8. Save .ots file
         let ots_path = format!("{}.ots", path.display());
@@ -159,10 +151,7 @@ fn build_timestamp(
         }],
     };
 
-    Timestamp {
-        start_digest: file_digest,
-        first_step: append_step,
-    }
+    Timestamp { start_digest: file_digest, first_step: append_step }
 }
 
 /// Save a `DetachedTimestampFile` to disk
@@ -218,9 +207,6 @@ mod tests {
 
         // Verify structure
         assert_eq!(timestamp.start_digest, file_digest);
-        assert!(matches!(
-            timestamp.first_step.data,
-            StepData::Op(Op::Append(_))
-        ));
+        assert!(matches!(timestamp.first_step.data, StepData::Op(Op::Append(_))));
     }
 }

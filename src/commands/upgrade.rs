@@ -1,10 +1,7 @@
 use crate::calendar::CalendarClient;
 use crate::error::{Error, Result};
+use crate::ots::{Attestation, Deserializer, DetachedTimestampFile, Step, StepData, Timestamp};
 use log::{debug, info, warn};
-use opentimestamps::attestation::Attestation;
-use opentimestamps::ser::Deserializer;
-use opentimestamps::timestamp::{Step, StepData, Timestamp};
-use opentimestamps::DetachedTimestampFile;
 use std::fs::{self, File};
 use std::io::{BufReader, BufWriter, Cursor};
 use std::path::Path;
@@ -140,8 +137,7 @@ async fn upgrade_step(step: &mut Step, client: &CalendarClient) -> Result<bool> 
             }
         }
         // Bitcoin attestations and unknown attestations are already complete
-        StepData::Attestation(Attestation::Bitcoin { .. } | Attestation::Unknown { ..
-}) => {}
+        StepData::Attestation(Attestation::Bitcoin { .. } | Attestation::Unknown { .. }) => {}
     }
 
     Ok(upgraded)
@@ -166,15 +162,11 @@ fn count_steps(step: &Step) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use opentimestamps::op::Op;
+    use crate::ots::Op;
 
     #[test]
     fn test_count_steps() {
-        let step = Step {
-            data: StepData::Op(Op::Sha256),
-            output: vec![0u8; 32],
-            next: vec![],
-        };
+        let step = Step { data: StepData::Op(Op::Sha256), output: vec![0u8; 32], next: vec![] };
 
         assert_eq!(count_steps(&step), 1);
 

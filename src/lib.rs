@@ -3,6 +3,7 @@
 pub mod calendar;
 pub mod commands;
 pub mod error;
+pub mod ots;
 pub mod verifier;
 
 pub use calendar::{CalendarClient, DEFAULT_CALENDARS};

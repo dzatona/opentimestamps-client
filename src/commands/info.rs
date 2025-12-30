@@ -1,7 +1,5 @@
 use crate::error::Result;
-use opentimestamps::attestation::Attestation;
-use opentimestamps::timestamp::{Step, StepData};
-use opentimestamps::DetachedTimestampFile;
+use crate::ots::{Attestation, DetachedTimestampFile, Step, StepData};
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;

@@ -10,7 +10,7 @@ pub enum Error {
 
     /// Invalid OTS file format
     #[error("Invalid OTS file: {0}")]
-    InvalidOts(#[from] opentimestamps::error::Error),
+    InvalidOts(#[from] crate::ots::OtsError),
 
     /// HTTP request failed
     #[error("HTTP error: {0}")]
