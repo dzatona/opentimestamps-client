@@ -2,7 +2,7 @@ use crate::calendar::CalendarClient;
 use crate::error::{Error, Result};
 use crate::ots::{Attestation, Deserializer, DetachedTimestampFile, Step, StepData, Timestamp};
 use log::debug;
-use std::fs::{self, File};
+use std::fs::File;
 use std::io::{BufReader, BufWriter, Cursor};
 use std::path::Path;
 use std::time::Duration;
@@ -21,7 +21,6 @@ use std::time::Duration;
 ///
 /// Returns error if:
 /// - File cannot be read or parsed
-/// - Backup fails
 /// - Updated file cannot be written
 pub async fn execute(file: &Path, dry_run: bool) -> Result<()> {
     println!("Upgrading timestamp: {}", file.display());
@@ -51,16 +50,7 @@ pub async fn execute(file: &Path, dry_run: bool) -> Result<()> {
         return Ok(());
     }
 
-    // 4. Backup original
-    let backup_path = format!("{}.bak", file.display());
-    if Path::new(&backup_path).exists() {
-        eprintln!("Backup file {backup_path} already exists, skipping backup");
-    } else {
-        fs::copy(file, &backup_path)?;
-        debug!("Backed up to {backup_path}");
-    }
-
-    // 5. Save updated .ots
+    // 4. Save updated .ots
     let f = File::create(file)?;
     let mut writer = BufWriter::new(f);
     ots.to_writer(&mut writer)?;
