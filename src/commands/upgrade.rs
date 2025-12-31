@@ -31,7 +31,13 @@ pub async fn execute(file: &Path, dry_run: bool) -> Result<()> {
     let reader = BufReader::new(f);
     let mut ots = DetachedTimestampFile::from_reader(reader)?;
 
-    // 2. Find pending attestations and try to upgrade
+    // 2. Check if already upgraded (has Bitcoin attestation)
+    if has_bitcoin_attestation(&ots.timestamp.first_step) {
+        println!("Timestamp already upgraded (Bitcoin attestation present)");
+        return Ok(());
+    }
+
+    // 3. Find pending attestations and try to upgrade
     let client = CalendarClient::new(Duration::from_secs(30))?;
     let upgraded = upgrade_timestamp(&mut ots.timestamp, &client).await?;
 
@@ -45,7 +51,7 @@ pub async fn execute(file: &Path, dry_run: bool) -> Result<()> {
         return Ok(());
     }
 
-    // 3. Backup original
+    // 4. Backup original
     let backup_path = format!("{}.bak", file.display());
     if Path::new(&backup_path).exists() {
         eprintln!("Backup file {backup_path} already exists, skipping backup");
@@ -54,7 +60,7 @@ pub async fn execute(file: &Path, dry_run: bool) -> Result<()> {
         debug!("Backed up to {backup_path}");
     }
 
-    // 4. Save updated .ots
+    // 5. Save updated .ots
     let f = File::create(file)?;
     let mut writer = BufWriter::new(f);
     ots.to_writer(&mut writer)?;
@@ -143,6 +149,15 @@ async fn upgrade_step(step: &mut Step, client: &CalendarClient) -> Result<bool> 
     Ok(upgraded)
 }
 
+/// Check if timestamp already contains a Bitcoin attestation
+fn has_bitcoin_attestation(step: &Step) -> bool {
+    match &step.data {
+        StepData::Attestation(Attestation::Bitcoin { .. }) => true,
+        StepData::Fork | StepData::Op(_) => step.next.iter().any(has_bitcoin_attestation),
+        _ => false,
+    }
+}
+
 /// Parse calendar server response into a Timestamp
 ///
 /// The calendar returns binary timestamp data that needs to be deserialized
@@ -190,5 +205,77 @@ mod tests {
 
         let result = parse_calendar_response(&commitment, &invalid_response);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_has_bitcoin_attestation_direct() {
+        let step = Step {
+            data: StepData::Attestation(Attestation::Bitcoin { height: 123456 }),
+            output: vec![0u8; 32],
+            next: vec![],
+        };
+        assert!(has_bitcoin_attestation(&step));
+    }
+
+    #[test]
+    fn test_has_bitcoin_attestation_nested() {
+        let step = Step {
+            data: StepData::Op(Op::Sha256),
+            output: vec![0u8; 32],
+            next: vec![Step {
+                data: StepData::Attestation(Attestation::Bitcoin { height: 123456 }),
+                output: vec![0u8; 32],
+                next: vec![],
+            }],
+        };
+        assert!(has_bitcoin_attestation(&step));
+    }
+
+    #[test]
+    fn test_has_bitcoin_attestation_in_fork() {
+        let step = Step {
+            data: StepData::Fork,
+            output: vec![0u8; 32],
+            next: vec![
+                Step {
+                    data: StepData::Attestation(Attestation::Pending {
+                        uri: "https://example.com".to_string(),
+                    }),
+                    output: vec![0u8; 32],
+                    next: vec![],
+                },
+                Step {
+                    data: StepData::Attestation(Attestation::Bitcoin { height: 123456 }),
+                    output: vec![0u8; 32],
+                    next: vec![],
+                },
+            ],
+        };
+        assert!(has_bitcoin_attestation(&step));
+    }
+
+    #[test]
+    fn test_has_bitcoin_attestation_pending_only() {
+        let step = Step {
+            data: StepData::Attestation(Attestation::Pending {
+                uri: "https://example.com".to_string(),
+            }),
+            output: vec![0u8; 32],
+            next: vec![],
+        };
+        assert!(!has_bitcoin_attestation(&step));
+    }
+
+    #[test]
+    fn test_has_bitcoin_attestation_unknown() {
+        let step = Step {
+            data: StepData::Attestation(Attestation::Unknown {
+                tag: vec![0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08],
+                data: vec![0xaa],
+            }),
+            output: vec![0u8; 32],
+            next: vec![],
+        };
+        assert!(!has_bitcoin_attestation(&step));
     }
 }
