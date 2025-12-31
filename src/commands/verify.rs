@@ -7,7 +7,7 @@ use crate::verifier::ElectrumVerifier;
 use crate::verifier::EsploraVerifier;
 #[cfg(all(feature = "rpc", not(feature = "electrum"), not(feature = "esplora")))]
 use crate::verifier::RpcVerifier;
-use log::{debug, info};
+use log::debug;
 use sha2::{Digest, Sha256};
 use std::fs::File;
 use std::io::{BufReader, Read};
@@ -68,7 +68,7 @@ pub async fn execute(file: &Path, target: Option<&Path>) -> Result<()> {
 
     // 4. Find Bitcoin attestation and verify against blockchain
     if let Some((merkle_root, height)) = find_bitcoin_attestation(&ots.timestamp.first_step) {
-        info!("Found Bitcoin attestation at block {height}");
+        println!("Found Bitcoin attestation at block {height}");
 
         // Fetch block header from blockchain
         let header = {

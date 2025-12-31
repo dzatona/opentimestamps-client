@@ -13,12 +13,13 @@ use cli::{Cli, Command};
 
 #[tokio::main]
 async fn main() -> error::Result<()> {
-    env_logger::init();
-
     let cli = Cli::parse();
 
+    // Initialize logger based on verbose flag
     if cli.verbose {
-        log::info!("Verbose mode enabled");
+        env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("debug")).init();
+    } else {
+        env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("warn")).init();
     }
 
     match cli.command {

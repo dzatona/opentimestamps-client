@@ -1,7 +1,7 @@
 use crate::calendar::CalendarClient;
 use crate::error::{Error, Result};
 use crate::ots::{Attestation, Deserializer, DetachedTimestampFile, Step, StepData, Timestamp};
-use log::{debug, info, warn};
+use log::debug;
 use std::fs::{self, File};
 use std::io::{BufReader, BufWriter, Cursor};
 use std::path::Path;
@@ -24,7 +24,7 @@ use std::time::Duration;
 /// - Backup fails
 /// - Updated file cannot be written
 pub async fn execute(file: &Path, dry_run: bool) -> Result<()> {
-    info!("Upgrading timestamp: {}", file.display());
+    println!("Upgrading timestamp: {}", file.display());
 
     // 1. Read .ots file
     let f = File::open(file)?;
@@ -36,19 +36,19 @@ pub async fn execute(file: &Path, dry_run: bool) -> Result<()> {
     let upgraded = upgrade_timestamp(&mut ots.timestamp, &client).await?;
 
     if !upgraded {
-        info!("Timestamp not yet ready for upgrade (still pending)");
+        println!("Timestamp not yet ready for upgrade (still pending)");
         return Ok(());
     }
 
     if dry_run {
-        info!("Dry run - not saving changes");
+        println!("Dry run - not saving changes");
         return Ok(());
     }
 
     // 3. Backup original
     let backup_path = format!("{}.bak", file.display());
     if Path::new(&backup_path).exists() {
-        warn!("Backup file {backup_path} already exists, skipping backup");
+        eprintln!("Backup file {backup_path} already exists, skipping backup");
     } else {
         fs::copy(file, &backup_path)?;
         debug!("Backed up to {backup_path}");
@@ -59,7 +59,7 @@ pub async fn execute(file: &Path, dry_run: bool) -> Result<()> {
     let mut writer = BufWriter::new(f);
     ots.to_writer(&mut writer)?;
 
-    info!("Timestamp upgraded successfully");
+    println!("Timestamp upgraded successfully");
     Ok(())
 }
 
@@ -87,7 +87,7 @@ async fn upgrade_step(step: &mut Step, client: &CalendarClient) -> Result<bool> 
 
     match &step.data {
         StepData::Attestation(Attestation::Pending { uri }) => {
-            info!("Found pending attestation at {uri}");
+            println!("Found pending attestation at {uri}");
 
             // Try to get completed timestamp from calendar
             match client.get_timestamp(uri, &step.output).await {
@@ -106,11 +106,11 @@ async fn upgrade_step(step: &mut Step, client: &CalendarClient) -> Result<bool> 
                             step.data = new_timestamp.first_step.data.clone();
                             step.next.clone_from(&new_timestamp.first_step.next);
 
-                            info!("Upgraded pending attestation");
+                            println!("Upgraded pending attestation");
                             upgraded = true;
                         }
                         Err(e) => {
-                            warn!("Failed to parse calendar response: {e}");
+                            eprintln!("Failed to parse calendar response: {e}");
                         }
                     }
                 }
@@ -118,7 +118,7 @@ async fn upgrade_step(step: &mut Step, client: &CalendarClient) -> Result<bool> 
                     debug!("Attestation not yet available at {uri}");
                 }
                 Err(e) => {
-                    warn!("Failed to query calendar {uri}: {e}");
+                    eprintln!("Failed to query calendar {uri}: {e}");
                 }
             }
         }

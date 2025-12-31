@@ -1,7 +1,7 @@
 use crate::calendar::CalendarClient;
 use crate::error::Result;
 use crate::ots::{Deserializer, DetachedTimestampFile, DigestType, Op, Step, StepData, Timestamp};
-use log::{debug, info};
+use log::debug;
 use sha2::{Digest, Sha256};
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Cursor, Read, Write};
@@ -44,7 +44,7 @@ pub async fn execute(
 
     for file_path in files {
         let path = file_path.as_ref();
-        info!("Stamping file: {}", path.display());
+        println!("Stamping file: {}", path.display());
 
         // 1. Read file and compute SHA256
         let file_digest = hash_file(path)?;
@@ -78,7 +78,7 @@ pub async fn execute(
         let ots_path = format!("{}.ots", path.display());
         save_ots(&ots, &ots_path)?;
 
-        info!("Created timestamp: {ots_path}");
+        println!("Created timestamp: {ots_path}");
     }
 
     Ok(())
